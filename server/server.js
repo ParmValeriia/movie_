@@ -17,37 +17,37 @@ app.get("/", (req, res) => {
     res.end("Hello from express")
 })
 
-function getMovie(req, res){
+function getMovie(req, res) {
     const videoPath = path.resolve(__dirname, "public", req.filename)
 
     const stat = fs.statSync(videoPath)
     const fileSize = stat.size
 
     const range = req.header.range;
-    if(range){
+    if (range) {
         const parts = range.replace(/bytes=/, "").split("-")
         const start = parseInt(parts[0], 10);
-        const end = parts[1]? parseInt(parts[1], 10) : fileSize -1
-        if (start>= fileSize){
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+        if (start >= fileSize) {
             res.status(416).send("Запит за межами діапазону")
             return
         }
         const chunkSize = end - start + 1
-        const file = fs.createReadStream(videoPath, {start, end})
+        const file = fs.createReadStream(videoPath, { start, end })
         const head = {
             "Content-Range": `bytes ${start}-${end}/${fileSize}`,
             "Content-Length": chunkSize,
             "Accept-Ranges": "bytes",
             "Content-Type": "video/mp4"
         }
-        res.writeHead(206,head)
+        res.writeHead(206, head)
         file.pipe(res)
-    }else{
+    } else {
         const head = {
             "Content-Type": "video/mp4",
             "Content-Length": fileSize
         }
-        res.writeHead(200,head)
+        res.writeHead(200, head)
         fs.createReadStream(videoPath).pipe(res)
     }
 }
@@ -71,6 +71,18 @@ app.get("/movies/:id", (req, res, next) => {
         }
     })
 
-},getMovie)
+}, getMovie)
+
+app.get("/movies", (req,res)=>{
+    let query = "SELECT * FROM movie"
+    db.query (query, (err, result)=>{
+        if(err){
+            console.error("SQL error", err)
+            res.status(500).send("Internal Sever error")
+        }else{
+            res.json(result)
+        }
+    })
+})
 
 app.listen(3000, () => console.log("Server started!"))
