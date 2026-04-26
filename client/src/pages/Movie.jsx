@@ -4,7 +4,7 @@ import "plyr-react/plyr.css"
 import {useParams} from "react-router"
 
 export default function Movie() {
-    let {Id} = useParams()
+    let {id} = useParams()
     return (
         <div>
             <Plyr 
